@@ -18,4 +18,23 @@ def domino_paving(n: int) -> int:
     """
     a = 0
     # BEGIN SOLUTION
+    if n == 0:
+        return 1
+    if n == 1 or n == 2:
+        return 0
+    if n == 3:
+        return 1
+
+    # Initialize the base cases
+    dp = [0] * (n + 1)
+    dp[0] = 1  # 3x0 case
+    dp[1] = 0  # 3x1 case
+    dp[2] = 0  # 3x2 case
+    dp[3] = 1  # 3x3 case
+
+    # Fill the dp array using the recurrence relation
+    for i in range(4, n + 1):
+        dp[i] = dp[i - 1] + dp[i - 3]
+
+    return dp[n]
     # END SOLUTION

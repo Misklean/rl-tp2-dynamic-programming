@@ -26,6 +26,19 @@ def mdp_value_iteration(mdp: MDP, max_iter: int = 1000, gamma=1.0) -> np.ndarray
     """
     values = np.zeros(mdp.observation_space.n)
     # BEGIN SOLUTION
+    for i in range(max_iter):
+        new_values = np.copy(values)
+        for state in range(mdp.observation_space.n):
+            action_values = []
+            for action in range(mdp.action_space.n):
+                q_value = 0
+                next_state, reward, done = mdp.P[state][action]
+                q_value += reward + gamma * (0 if done else values[next_state])
+                action_values.append(q_value)
+            new_values[state] = max(action_values)
+        if np.allclose(values, new_values):
+            break
+        values = new_values
     # END SOLUTION
     return values
 
@@ -42,6 +55,30 @@ def grid_world_value_iteration(
     """
     values = np.zeros((4, 4))
     # BEGIN SOLUTION
+    for i in range(max_iter):
+        delta = 0
+        new_values = np.copy(values)
+        for row in range(4):
+            for col in range(4):
+                env.current_position = (row, col)
+                v = values[row, col]
+                action_values = []
+                for action in range(env.action_space.n):
+                    next_states = []
+                    for prob, next_state, reward, done in env.P[env.current_position][action]:
+                        next_states.append((next_state, reward, prob, done))
+                    q_value = 0
+                    for next_state, reward, probability, _, _ in next_states:
+                        next_row, next_col = next_state
+                        q_value += probability * (reward + gamma * values[next_row, next_col])
+                    action_values.append(q_value)
+                new_values[row, col] = max(action_values)
+                delta = max(delta, abs(v - new_values[row, col]))
+        if delta < theta:
+            break
+        values = new_values
+
+    return values
     # END SOLUTION
 
 
@@ -72,3 +109,24 @@ def stochastic_grid_world_value_iteration(
 ) -> np.ndarray:
     values = np.zeros((4, 4))
     # BEGIN SOLUTION
+    for i in range(max_iter):
+        delta = 0
+        new_values = np.copy(values)
+        for row in range(4):
+            for col in range(4):
+                env.current_position = (row, col)
+                v = values[row, col]
+                action_values = []
+                for action in range(env.action_space.n):
+                    next_states = env.get_next_states(action=action)
+                    q_value = 0
+                    for next_state, reward, probability, _, _ in next_states:
+                        next_row, next_col = next_state
+                        q_value += probability * (reward + gamma * values[next_row, next_col])
+                    action_values.append(q_value)
+                new_values[row, col] = max(action_values)
+                delta = max(delta, abs(v - new_values[row, col]))
+        if delta < theta:
+            break
+        values = new_values
+    return values
