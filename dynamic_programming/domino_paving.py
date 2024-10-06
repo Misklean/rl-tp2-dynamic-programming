@@ -20,7 +20,7 @@ def domino_paving(n: int) -> int:
     # BEGIN SOLUTION
     if n % 2 != 0:
         return 0
-    
+
     # Base cases:
     if n == 0:
         return 1
@@ -30,7 +30,7 @@ def domino_paving(n: int) -> int:
         return 11
 
     dp = [0] * (n + 1)
-    dp[0] = 1 
+    dp[0] = 1
     dp[2] = 3
     dp[4] = 11
 

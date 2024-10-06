@@ -33,7 +33,6 @@ def fibonacci(n: int) -> int:
     # END SOLUTION
 
 
-
 # Exercice 2: Fibonacci avec mémorisation
 # ---------------------------------------
 # Ecrire une fonction qui calcule F(n) pour un n donné, en mémorisant

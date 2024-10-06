@@ -55,7 +55,7 @@ class MDP(gym.Env):
             # état 1
             [(0, -1, False), (2, -1, False)],  # action 0, action 1
             # état 2
-            [(2, 0, False), (0, -1, False)],    # action 0, action 1
+            [(2, 0, False), (0, -1, False)],  # action 0, action 1
         ]
 
         self.reset_state()  # Réinitialiser à un état initial aléatoire
@@ -82,6 +82,6 @@ class MDP(gym.Env):
         """
         # BEGIN SOLUTION
         next_state, reward, done = self.P[self.state][action]
-        self.state = next_state if transition else self.state  # mise à jour de l'état si la transition est activée
+        self.state = next_state if transition else self.state
         return next_state, reward, done, {}
         # END SOLUTION

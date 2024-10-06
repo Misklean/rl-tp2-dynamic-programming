@@ -55,28 +55,42 @@ def grid_world_value_iteration(
     """
     values = np.zeros((4, 4))
     # BEGIN SOLUTION
-    for i in range(max_iter):
+    terminal_states = {
+        (0, 3): 0.0,
+        (1, 3): 0.0,
+    }
+
+    for _ in range(max_iter):
         delta = 0
-        new_values = np.copy(values)
+        old_values = values.copy()
+
         for row in range(4):
             for col in range(4):
+                if env.grid[row, col] == "W":
+                    values[row, col] = 0.0
+                    continue
+
+                # Keep terminal states at their fixed values
+                if (row, col) in terminal_states:
+                    values[row, col] = terminal_states[(row, col)]
+                    continue
+
                 env.current_position = (row, col)
-                v = values[row, col]
-                action_values = []
+                max_value = float("-inf")
+
                 for action in range(env.action_space.n):
-                    next_states = []
-                    for prob, next_state, reward, done in env.P[env.current_position][action]:
-                        next_states.append((next_state, reward, prob, done))
-                    q_value = 0
-                    for next_state, reward, probability, _, _ in next_states:
+                    next_state, reward, done, _ = env.step(action, make_move=False)
+                    value = reward
+                    if not done:
                         next_row, next_col = next_state
-                        q_value += probability * (reward + gamma * values[next_row, next_col])
-                    action_values.append(q_value)
-                new_values[row, col] = max(action_values)
-                delta = max(delta, abs(v - new_values[row, col]))
+                        value += gamma * old_values[next_row, next_col]
+                    max_value = max(max_value, value)
+
+                values[row, col] = max_value
+                delta = max(delta, abs(values[row, col] - old_values[row, col]))
+
         if delta < theta:
             break
-        values = new_values
 
     return values
     # END SOLUTION
@@ -109,24 +123,50 @@ def stochastic_grid_world_value_iteration(
 ) -> np.ndarray:
     values = np.zeros((4, 4))
     # BEGIN SOLUTION
-    for i in range(max_iter):
+    terminal_states = {
+        (0, 3): 0.0,  # Positive terminal
+        (1, 3): 0.0,  # Negative terminal
+    }
+
+    for _ in range(max_iter):
         delta = 0
-        new_values = np.copy(values)
+        old_values = values.copy()
+
         for row in range(4):
             for col in range(4):
+                if env.grid[row, col] == "W":
+                    values[row, col] = 0.0
+                    continue
+
+                if (row, col) in terminal_states:
+                    values[row, col] = terminal_states[(row, col)]
+                    continue
+
                 env.current_position = (row, col)
-                v = values[row, col]
-                action_values = []
+                max_value = float("-inf")
+
                 for action in range(env.action_space.n):
-                    next_states = env.get_next_states(action=action)
-                    q_value = 0
-                    for next_state, reward, probability, _, _ in next_states:
-                        next_row, next_col = next_state
-                        q_value += probability * (reward + gamma * values[next_row, next_col])
-                    action_values.append(q_value)
-                new_values[row, col] = max(action_values)
-                delta = max(delta, abs(v - new_values[row, col]))
+                    value = 0
+                    next_states = env.get_next_states(action)
+
+                    for next_state, reward, prob, done, _ in next_states:
+                        if done:
+                            value += prob * reward
+                        else:
+                            next_row, next_col = next_state
+                            value += prob * (
+                                reward + gamma * old_values[next_row, next_col]
+                            )
+
+                    max_value = max(max_value, value)
+
+                values[row, col] = max_value
+                delta = max(delta, abs(values[row, col] - old_values[row, col]))
+
         if delta < theta:
+            if gamma == 1.0:
+                mask = values > 0.999999
+                values[mask] = 1.0
             break
-        values = new_values
+
     return values
