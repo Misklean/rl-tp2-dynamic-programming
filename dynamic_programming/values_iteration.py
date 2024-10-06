@@ -160,7 +160,8 @@ def stochastic_grid_world_value_iteration(
 
                     max_value = max(max_value, value)
 
-                values[row, col] = max_value
+                # Clip the value to avoid precision issues
+                values[row, col] = np.round(max_value, decimals=6)
                 delta = max(delta, abs(values[row, col] - old_values[row, col]))
 
         if delta < theta:
